@@ -1,0 +1,4 @@
+# Auto Configure
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.beyond.config.MyBatisConfig,\
+com.beyond.config.MyBatisConfigMissing
