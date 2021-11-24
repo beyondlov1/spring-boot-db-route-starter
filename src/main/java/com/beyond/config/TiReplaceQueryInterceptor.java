@@ -22,6 +22,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.sql.Connection;
 import java.sql.Statement;
 import java.text.DateFormat;
 import java.util.Arrays;
@@ -39,8 +40,8 @@ import java.util.stream.Collectors;
 @Intercepts(
         @Signature(
                 type = StatementHandler.class,
-                method = "query",
-                args = {Statement.class, ResultHandler.class}
+                method = "prepare",
+                args = {Connection.class, Integer.class}
         )
 )
 @Slf4j
