@@ -81,7 +81,7 @@ public class TiReplaceQueryInterceptor implements Interceptor {
         if (routingParam != null && routingParam.getDatabaseType() == TiReplaceHolder.DataSourceType.TIDB && routingParam.isForce()) {
             return tiRoute(invocation);
         }
-        if (TransactionSynchronizationManager.isActualTransactionActive()){
+        if (TransactionSynchronizationManager.isActualTransactionActive() || !isSelect(invocation)){
             log.debug("transaction is active, no route");
             return noRoute(invocation);
         }
@@ -96,6 +96,19 @@ public class TiReplaceQueryInterceptor implements Interceptor {
         }
         return autoRoute(invocation);
     }
+
+
+    private boolean isSelect(Invocation invocation){
+        StatementHandler target = (StatementHandler) invocation.getTarget();
+        BoundSql boundSql = target.getBoundSql();
+        String sql = boundSql.getSql();
+        if (StringUtils.isBlank(sql)){
+            return false;
+        }
+        String trim = StringUtils.trim(StringUtils.lowerCase(sql));
+        return trim.startsWith("select");
+    }
+
 
     private Object autoRoute(Invocation invocation) throws InvocationTargetException, IllegalAccessException {
         long t1 = System.currentTimeMillis();
