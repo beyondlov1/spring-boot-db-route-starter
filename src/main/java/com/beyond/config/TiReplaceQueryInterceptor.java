@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -268,12 +269,26 @@ public class TiReplaceQueryInterceptor implements Interceptor {
             } else {
                 // MetaObject主要是封装了originalObject对象，提供了get和set的方法用于获取和设置originalObject的属性值,主要支持对JavaBean、Collection、Map三种类型对象的操作
                 MetaObject metaObject = configuration.newMetaObject(parameterObject);
+                Iterator<?> iterator = null;
                 for (ParameterMapping parameterMapping : parameterMappings) {
                     String propertyName = parameterMapping.getProperty();
                     if (metaObject.hasGetter(propertyName)) {
                         Object obj = metaObject.getValue(propertyName);
-                        sql = sql.replaceFirst("\\?",
-                                Matcher.quoteReplacement(getParameterValue(obj)));
+                        if (obj instanceof List){
+                            if (iterator == null){
+                                iterator = ((List<?>) obj).iterator();
+                            }
+                            if (iterator.hasNext()){
+                                Object next = iterator.next();
+                                sql = sql.replaceFirst("\\?",
+                                        Matcher.quoteReplacement(getParameterValue(next)));
+                            }else{
+                                iterator = null;
+                            }
+                        }else{
+                            sql = sql.replaceFirst("\\?",
+                                    Matcher.quoteReplacement(getParameterValue(obj)));
+                        }
                     } else if (boundSql.hasAdditionalParameter(propertyName)) {
                         // 该分支是动态sql
                         Object obj = boundSql.getAdditionalParameter(propertyName);
